@@ -1,0 +1,49 @@
+#使い方
+https://www.youtube.com/watch?v=jj-ypl8LtxQ&feature=youtu.be
+
+loop_size = 10 #Animation Number (アニメーションさせる枚数)
+create_mcmeta = True #Please select True or Flase (mcmetaのファイルを自動生成させるか True 又は False)
+
+def mcmeta_file():
+    if create_mcmeta == False:
+        pass
+    else:
+        with open("{}.mcmeta".format(image.filename), mode='w') as f:
+            f.write("{\n")
+            f.write("  \'animation\': {\n")
+            f.write("    \"frametime\": 2, #Animation speed\n")
+            f.write("    \"frames\": [\n")
+            for loopnum in range(loop_size + 1):
+                if loopnum == loop_size:
+                    f.write("      {}\n".format(loopnum))
+                else:
+                    f.write("      {},\n".format(loopnum))
+            f.write("    ]\n")
+            f.write("  }\n")
+            f.write("}")
+        print("mcmeta file created")
+        print("mcmetaファイルを生成しました。\n({}.mcmeta)".format(image.filename))
+
+loop_size -= 1
+image = gimp.image_list()[0]
+pdb.gimp_image_convert_rgb(image)
+pdb.gimp_image_resize(image, image.width, image.height * (loop_size + 1), 0, 0)
+
+for copy in range(loop_size):
+    new_image = image.layers[0].copy(1)
+    image.add_layer(new_image, 0)
+    del new_image
+
+layer_width = image.layers[0].width
+offset_layer = layer_width
+
+for loop in reversed(range(loop_size)):
+    if loop == loop_size:
+        continue
+    image.layers[loop].set_offsets(0, offset_layer)
+    offset_layer += layer_width
+
+#Press enter to create mcmeta file
+#エンターを押すとmcmetaファイルが生成されます
+
+mcmeta_file()
